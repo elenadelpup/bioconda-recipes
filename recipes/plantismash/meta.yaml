@@ -1,6 +1,5 @@
 {% set name = "plantismash" %}
-{% set version = "2.0.0" %}
-# Update this to the sha256 of the GitHub release tarball for v2.0.0 from YOUR repo
+{% set version = "2.0" %}
 {% set sha256 = "d272d3d5643ed6a2ba48569f8204d9685be7be823b666258ea330639552e9d6b" %}
 
 package:
@@ -8,32 +7,34 @@ package:
   version: {{ version }}
 
 source:
-  url: https://github.com/plantismash/plantismash/archive/refs/tags/v{{ version }}.tar.gz
+  url: https://github.com/plantismash/plantismash/archive/refs/tags/{{ version }}.tar.gz
   sha256: {{ sha256 }}
 
 build:
+  noarch: python
   number: 0
-  # not noarch: you rely on many platform CLIs
-  # install your package via pip (PEP 517)
   script: {{ PYTHON }} -m pip install . -vv
   entry_points:
     - plantismash = run_antismash:main
+  run_exports:
+    - {{ pin_subpackage("plantismash", max_pin="x") }}
 
 requirements:
   host:
-    - python >=3.8,<3.9
+    - python >=3.9,<3.12
     - pip
     - setuptools
     - wheel
   run:
-    # Python/ABI
-    - python >=3.8,<3.9
+    # Python / ABI
+    - python >=3.9,<3.12
 
-    # Python libs (all available on conda-forge/bioconda)
+    # Python libs
     - biopython >=1.76,<1.78
+    - helperlibs
+    - pyquery >=2,<3
     - numpy >=1.24,<2
     - cssselect
-    - pyquery >=2,<3              # 1.2.9 is not on conda for linux/osx; >=2 works with Py3.8+
     - svgwrite
     - openpyxl
     - networkx ==3.1
@@ -42,30 +43,21 @@ requirements:
     - ete3
     - tqdm
     - logomaker
-    - moods ==1.9.4.1             # MOODS-python on PyPI maps to 'moods' on conda
+    - moods
+    - straight-plugin ==1.4.0.post1
 
-    # These two need to be packaged separately or vendored:
-    # - helperlibs
-    # - straight-plugin = 1.4.0.post1
-    #
-    # After adding recipes for them (recommended), uncomment:
-    # - helperlibs
-    # - straight-plugin ==1.4.0.post1
-
-    # CLI tools (bioconda/conda-forge)
-    - hmmer ==3.3.2
-    - fasttree ==2.1.11
-    - diamond ==2.0.15
-    - muscle ==3.8.31
+    # External CLI tools
+    - hmmer >=3.3,<3.4
+    - fasttree >=2.1.11
+    - diamond >=2.0
+    - muscle >=3.8,<3.9
     - prodigal
-    - blast ==2.12.0
-    - cd-hit ==4.8.1
-    - libxml2 ==2.10.3
+    - blast >=2.12,<3
+    - cd-hit >=4.8
+    - libxml2 >=2.10
     - pplacer
     - ncbi-datasets-cli
     - unzip
-    # hmmer2 is old and label-specific; omit unless strictly required.
-    # If truly required, consider gating it per-platform with selectors.
 
 test:
   commands:
@@ -73,7 +65,7 @@ test:
 
 about:
   home: https://github.com/plantismash/plantismash
-  summary: "Detection of plant specialized metabolism gene clusters."
+  summary: Detection of plant specialized metabolism gene clusters.
   description: |
     PlantiSMASH identifies and analyzes plant biosynthetic gene clusters,
     including expanded rules, substrate prediction for selected enzyme families,
